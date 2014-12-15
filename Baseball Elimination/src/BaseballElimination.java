@@ -10,6 +10,7 @@ public class BaseballElimination {
     private int[] W, L, R; // wins, losses, remaining games
     private int[][] G; // games left to play
     private String[] T; // teams
+    private String leader;
     private HashMap<String, Integer> teamIndex = new HashMap<String, Integer>();
 
     // create a baseball division from given filename in format specified below
@@ -26,6 +27,8 @@ public class BaseballElimination {
         T = new String[N];
 
         int i = 0;
+        int maxW = Integer.MIN_VALUE;
+
         while (i < N) {
             T[i] = file.readString();
             teamIndex.put(T[i], i);
@@ -36,6 +39,11 @@ public class BaseballElimination {
 
             for (int j = 0; j < N; ++j)
                 G[i][j] = file.readInt();
+
+            if (W[i] > maxW) {
+                leader = T[i];
+                maxW = W[i];
+            }
 
             ++i;
         }
@@ -54,7 +62,7 @@ public class BaseballElimination {
         Set<String> set = new HashSet<String>();
 
         if (isTriviallyEliminated(team)) {
-            set.add(getLeader());
+            set.add(leader);
             return set;
         }
 
@@ -170,6 +178,7 @@ public class BaseballElimination {
                 continue;
 
             int capacity = wx + rx - wins(T[i]);
+
             if (capacity < 0)
                 capacity = 0;
 
@@ -183,10 +192,6 @@ public class BaseballElimination {
 
     private FordFulkerson getFordFulkerson(FlowNetwork network) {
         return new FordFulkerson(network, SOURCE, SINK);
-    }
-
-    private String getLeader() {
-        return T[0];
     }
 
     private int getTeamVertex(int i) {
@@ -205,10 +210,10 @@ public class BaseballElimination {
     }
 
     private boolean isTriviallyEliminated(String team) {
-        if (team.equals(getLeader()))
+        if (team.equals(leader))
             return false;
 
-        if (wins(team) + remaining(team) < wins(getLeader()))
+        if (wins(team) + remaining(team) < wins(leader))
             return true;
 
         return false;
